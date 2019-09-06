@@ -1,5 +1,6 @@
 #include <iostream>
-#include <vector>
+#include <stdio.h> 
+#include <stdlib.h> 
 
 //- добавление элемента после последнего;
 //-добавление элемента перед первым; 
@@ -21,32 +22,97 @@ template <typename T>
 class dynamic_array
 {
 private:
-	size_t m_capacity;
 	size_t m_size;
-	T* data;
+	size_t m_capacity;
+	T* m_data;
 
-	bool MemAllocation();
+	void MemAllocation(const size_t ElementsAmount) 
+	{
+		m_data = static_cast<T*>(realloc(m_data, ElementsAmount * sizeof(T)));
+	}
 
 public:
-	dynamic_array();
-	dynamic_array(const size_t Size);
+	dynamic_array() : m_size(0), m_capacity(1)
+	{
+		m_data = static_cast<T*>(malloc(m_capacity * (sizeof(T))));
+		if (m_data == NULL)
+			std::cout << "Memory was not allocated\n";
+	}
+	dynamic_array(const size_t Size) : m_size(Size), m_capacity(m_size * 1.5)
+	{
+		m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
+		if (m_data == NULL)
+		{
+			std::cout << "Memory was not allocated\n";
+		}
+
+		for (size_t i = 0; i < m_size; i++)
+		{
+			m_data[i] = 0;
+		}
+
+	}
 	dynamic_array(const dynamic_array& Obj);
 	dynamic_array& operator=(const dynamic_array& Obj);
-	~dynamic_array();
+	~dynamic_array()
+	{
+		free(m_data);
+	}
 
-	T& operator[](const size_t Index);
-	bool operator!();
+	T& operator[](const size_t Index) 
+	{
+		if (Index > m_size - 1)
+		{
+			throw std::range_error("Out of range");
+		}
+		return m_data[Index];
+	}
 
-	size_t size() const noexcept;
-	void resize(const size_t Size);
-	void reserve(const size_t Size);
+	bool operator!() 
+	{
+		return m_size == 0 ? true : false;
+	}
 
-	void push_back(const T Value);
+	size_t size() const noexcept
+	{
+		return m_size;
+	}
+	void resize(const size_t NewSize)
+	{
+		m_size = NewSize;
+		m_capacity = NewSize;
+		MemAllocation(NewSize);
+
+		for (size_t i = 0; i < m_size; i++)
+		{
+			m_data[i] = 0;
+		}
+	}
+	void reserve(const size_t Capacity)
+	{
+		if (Capacity > m_capacity)
+		{
+			m_capacity = Capacity;
+			MemAllocation(m_capacity);
+		}
+	}
+
+	void push_back(const T Value) 
+	{
+		if (m_size == m_capacity)
+		{
+			m_capacity = ceil(m_capacity * 1.5);
+			MemAllocation(m_capacity);
+		}
+		
+		m_data[m_size] = Value;
+		m_size++;
+	}
 	void push_front(const T Value);
 	void emplace(const T Value, size_t Position);
 	
 	void erase(const T Value);
-	void clean();
+	void clean() noexcept;
 
 	T& search(const T Value) const;
 

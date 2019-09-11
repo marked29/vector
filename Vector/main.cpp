@@ -64,7 +64,7 @@ public:
 		if (Index > m_size - 1)
 		{
 			throw std::range_error("Out of range");
-		}
+		}	
 		return m_data[Index];
 	}
 
@@ -97,7 +97,7 @@ public:
 		}
 	}
 
-	void push_back(const T Value) 
+	void push_back(const T Value) noexcept
 	{
 		if (m_size == m_capacity)
 		{
@@ -108,11 +108,27 @@ public:
 		m_data[m_size] = Value;
 		m_size++;
 	}
-	void push_front(const T Value);
-	void emplace(const T Value, size_t Position);
+	void push_front(const T Value) noexcept
+	{
+		if (m_size == m_capacity)
+		{
+			m_capacity = ceil(m_capacity * 1.5);
+			MemAllocation(m_capacity);
+		}
+		
+		memmove(m_data + 1, m_data, m_size * sizeof(T));
+		m_size++;
+		m_data[0] = Value;
+	}
+
+	void insert(const T Value, size_t Position);
 	
 	void erase(const T Value);
-	void clean() noexcept;
+	void clean() noexcept
+	{
+		memset(m_data, 0, m_size * sizeof(T));
+		m_size = 0;
+	}
 
 	T& search(const T Value) const;
 

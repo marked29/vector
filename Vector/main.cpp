@@ -26,30 +26,34 @@ private:
 	size_t m_capacity;
 	T* m_data;
 
+
+	// possible change of signature of this method
 	void MemAllocation(const size_t ElementsAmount) 
 	{
+
+		// sizeof(T) + switch дл€ вычислени€ емкости вектора
+		// сколько используетс€
+		// сколько выделить
+		// здесь вс€ работа с пам€тью
+
+
+
 		m_data = static_cast<T*>(realloc(m_data, ElementsAmount * sizeof(T)));
+
 	}
 
 public:
-	dynamic_array() : m_size(0), m_capacity(1)
+	dynamic_array() : m_size(0), m_capacity(0)
 	{
-		m_data = static_cast<T*>(malloc(m_capacity * (sizeof(T))));
-		if (m_data == NULL)
-			std::cout << "Memory was not allocated\n";
+		m_data = NULL;
 	}
+
 	dynamic_array(const size_t Size) : m_size(Size), m_capacity(m_size * 1.5)
 	{
-		m_data = static_cast<T*>(malloc(m_capacity * sizeof(T)));
-		if (m_data == NULL)
-		{
-			std::cout << "Memory was not allocated\n";
-		}
+		MemAllocation(m_capacity);
 
 		for (size_t i = 0; i < m_size; i++)
-		{
 			m_data[i] = 0;
-		}
 
 	}
 	dynamic_array(const dynamic_array& Obj);
@@ -82,11 +86,6 @@ public:
 		m_size = NewSize;
 		m_capacity = NewSize;
 		MemAllocation(NewSize);
-
-		for (size_t i = 0; i < m_size; i++)
-		{
-			m_data[i] = 0;
-		}
 	}
 	void reserve(const size_t Capacity)
 	{
@@ -106,7 +105,7 @@ public:
 		}
 		
 		m_data[m_size] = Value;
-		m_size++;
+		++m_size;
 	}
 	void push_front(const T Value) noexcept
 	{
@@ -117,13 +116,28 @@ public:
 		}
 		
 		memmove(m_data + 1, m_data, m_size * sizeof(T));
-		m_size++;
+		++m_size;
 		m_data[0] = Value;
 	}
 
-	void insert(const T Value, size_t Position);
+	void insert(const T Value, size_t Position)
+	{
+		if (m_size == m_capacity)
+		{
+			m_capacity = ceil(m_capacity * 1.5);
+			MemAllocation(m_capacity);
+		}
+
+		memmove(m_data + Position + 1, m_data + Position, (m_size - Position) * sizeof(T));
+		++m_size;
+		m_data[Position] = Value;
+
+	}
 	
-	void erase(const T Value);
+	void erase(const T Value)
+	{
+
+	}
 	void clean() noexcept
 	{
 		memset(m_data, 0, m_size * sizeof(T));
